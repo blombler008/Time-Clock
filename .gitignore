@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+.git
+.vscode
+desktop.ini
+LICENSE
+LCDAssistant.exe
+tesotec.gif
+tesotec.jpg
+tesotecBlack.bmp
+tesotecWhite.bmp
+Thumbs.db
+.gitignore
+.gitattributes
