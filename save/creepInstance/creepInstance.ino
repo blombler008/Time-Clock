@@ -10,16 +10,16 @@ extern "C" {
 }
 
 
-unsigned long  epoch;
-byte timeServer[] = { 192, 43, 244, 18};    
-const int NTP_PACKET_SIZE= 48;              
-byte packetBuffer[ NTP_PACKET_SIZE];   
-IPAddress timeServerIP; 
-const char* ntpServerName = "ntp1.t-online.de";
-WiFiUDP udp;   
-#define OLED_RESET U8G2_R0
-U8G2_SH1106_128X64_NONAME_F_HW_I2C display(OLED_RESET);
-static const uint8_t tesotec [] PROGMEM = {
+unsigned long  epoch;																// initialise timer secounds
+byte timeServer[] = { 192, 43, 244, 18};    										// initialise local tiemr server ip
+const int NTP_PACKET_SIZE= 48;              										// initialise max length of package
+byte packetBuffer[ NTP_PACKET_SIZE];   												// initialise package size
+IPAddress timeServerIP; 															// initialise timer server ip
+const char* ntpServerName = "ntp1.t-online.de";										// timer server adress
+WiFiUDP udp;   																		// initialise wifi mode
+#define OLED_RESET U8G2_R0															// define the display rotation
+U8G2_SH1106_128X64_NONAME_F_HW_I2C display(OLED_RESET);								// initialise display mode
+static const uint8_t tesotec [] PROGMEM = {											// logo in hex code
     
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x30,0x00,	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0xc0,0xff,0x0f,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	0x00,0x00,0x00,0x00,0x00,0xfc,0xff,0xff,0x00,0x00,0x00,0x00,
@@ -64,124 +64,110 @@ static const uint8_t tesotec [] PROGMEM = {
     0x00,0x10,0xf0,0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	0x00,0x00,0x00,0x00,0x00,0xc0,0xff,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	0x00,0x00,0x00,0x00
-};
-
-int zeahler;
-os_timer_t  TimerOneSecond ;
-void timerCallback(void *pArg) {
-    epoch += 1;
+};																		
+os_timer_t  TimerOneSecond ;														// initialise timer
+void timerCallback(void *pArg) {													// timer function to count the secounds time up
+    epoch += 1;																		// counting secounds up
 } 
-const int ledPin =  2;
-int ledState = LOW;
-const char* ssid = "Wickinger";
-const char* password = "9602425401752097";
-boolean waitingDHCP=false;
+const char* ssid = "Wickinger";														/* self explaining */
+const char* password = "9602425401752097";											/* self explaining */
+boolean waitingDHCP=false;															/* self explaining */
 void setup() {
-    os_timer_setfn(&TimerOneSecond, timerCallback, NULL);
-    os_timer_arm(&TimerOneSecond, 1000, true);
-    display.begin();  
-    u8g2_SetI2CAddress(&display, 0x3C);
-    display.setColorIndex(1);
-    display.drawXBMP(0, 0, 128, 64, tesotec);
-    display.sendBuffer();
-    delay( 2000 );
-    display.setFont(u8g2_font_5x8_tn);
-    pinMode(ledPin, OUTPUT);
-    digitalWrite(ledPin, HIGH );
-    Wire.begin();
-    Serial.begin(57600);
-    Serial.print("\n\n Connecting to ");
-    Serial.println(ssid);
+    os_timer_setfn(&TimerOneSecond, timerCallback, NULL);							// set the timer to a function if time is reached
+    os_timer_arm(&TimerOneSecond, 1000, true);										// start the timer above
+    display.begin();  																// initialise the display
+    u8g2_SetI2CAddress(&display, 0x3C);												// sets the I2C adress of the display
+    display.setColorIndex(1);														// set color mode on the display to 1 (white)
+    display.drawXBMP(0, 0, 128, 64, tesotec);										// initialise the logo into the buffer
+    display.sendBuffer();															// sends the tesotec logo to the screen 
+    delay( 2000 );																	// waiting 2 secounds
+    display.setFont(u8g2_font_5x8_tn);												// small font
+    Wire.begin();																	// starts the wire mode for the PCF8574D
+    Serial.begin(57600);															// starts the serial monitor port for debugging
+    Serial.print("\n\n Connecting to ");											/* self explaining */
+    Serial.println(ssid);															/* self explaining */
 
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.begin(ssid, password);
+    WiFi.mode(WIFI_AP_STA);															// Set wifi mode to WIFI_AP_STA
+    WiFi.begin(ssid, password);														// connect to wifi 
     
-    while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.print(".");
+    while (WiFi.status() != WL_CONNECTED) {											// waiting for connection estabilaized
+		delay(500);																	/* self explaining */
+		Serial.print(".");															// identifier for the connection time
     }
-	Serial.println("\nWiFi connected");
-	digitalWrite(ledPin, LOW );
-	display.clearDisplay();
-	udp.begin(8888);
-	Serial.println("UDP started");
+	Serial.println("\nWiFi connected");												/* self explaining */				
+	display.clearDisplay();															/* self explaining */
+	udp.begin(8888);																// starts the utp connection for the time server
+	Serial.println("UDP started");													/* self explaining */
 }
 
 int switchLight = 0;
 void loop() {
-	if (switchLight == 1){
-
-		Wire.beginTransmission(B00100000); 
-		Wire.write(B11110111); 
-		Wire.endTransmission();
-		switchLight = 0;
-        
-	}else{
-		switchLight = 1;
+	if (switchLight == 1){															/* self explaining */
+		Wire.beginTransmission(B00100000); 											// begin talking with PCF8574D
+		Wire.write(B11110111); 														// LEDs ON
+		Wire.endTransmission();														// end talking with PCF8574D
+	} else {																		/* self explaining */
+		Wire.beginTransmission(B00100000); 											// begin talking with PCF8574D
+		Wire.write(B11111111); 														// LEDs OFF
+		Wire.endTransmission();														// end talking with PCF8574D
 	}
-	int iReceiveCNT ;
-	char chHour, chMinute, chSeconds, strTime[30] ;
-	unsigned long highWord, lowWord, secsSince1900 ;
-	const unsigned long seventyYears = 2208988800UL;    
-	if ( !(epoch % 60) || ( epoch < 100 ) ) {
-		WiFi.hostByName( ntpServerName, timeServerIP);  
-		sendNTPpacket( timeServerIP );                
-		delay(700);                                 
-		iReceiveCNT = udp.parsePacket();
-		if (!iReceiveCNT) {
-			Serial.print("A");
-		}
-		else {
-		display.clearBuffer(); 
-		Serial.println( "packet received, length = " + (String)iReceiveCNT);
-		udp.read(packetBuffer, NTP_PACKET_SIZE); 
-		highWord = word(packetBuffer[40], packetBuffer[41]);
-		lowWord = word(packetBuffer[42], packetBuffer[43]);
-		secsSince1900 = highWord << 16 | lowWord;
-		Serial.println( "Seconds since Jan 1 1900 = " + (String)secsSince1900);
-		epoch = secsSince1900 - seventyYears;    // subtract seventy years:
-		Serial.println( "Unix time = " + (String)epoch);
-		chHour    = (epoch % 86400L) / 3600;
-		chMinute  = (epoch % 3600) / 60;
-
-		Serial.println(highWord);
-		Serial.println(lowWord);
-		Serial.println(secsSince1900);
-		Serial.println(epoch);
-		sprintf(strTime,"%02i:%02i", chHour+1, chMinute) ;        // print the hour, minute and second:
-		Serial.println("The UTC time is " + (String)strTime );       // UTC is the time at Greenwich Meridian (GMT)
-		display.clearBuffer();
-		display.drawStr(0, 8, "tesotec ATE solutions" ) ;
-		display.drawStr(1, 63, "|" );
-		display.drawStr(121, 63, "|" );
-
-		}
-
+	int iReceiveCNT;																/* initialisate the package */
+	char chHour, chMinute, chSeconds, strTime[30];									/* initialisations of time numbers */
+	unsigned long highWord, lowWord, secsSince1900;									/* initialisations of time strings */
+	const unsigned long seventyYears = 2208988800UL;								/* initialisations of 1970 */
+	if ( !(epoch % 60) || ( epoch < 100 ) ) {										// waits for the timer to get 60 secounds
+		WiFi.hostByName( ntpServerName, timeServerIP);								// getting the server ip adress
+		sendNTPpacket( timeServerIP );												// send the package to server to let it response
+		delay(700);																	// waiting 700 milisecounds
+		iReceiveCNT = udp.parsePacket();											// trying to get the server response
+		if (!iReceiveCNT) {															// waiting for the server to response success
+			switchLight = 0;														// turns the led off
+			Serial.print("A");														// Prints "A" as long as nothing was send yet
+		} else {																	/* self explaining */
+			switchLight = 1;														// turns the led on
+			display.clearBuffer(); 													// clears the screen without removeing the pixels
+			Serial.println( "packet received, length = " + (String)iReceiveCNT);	/* self explaining */
+			udp.read(packetBuffer, NTP_PACKET_SIZE); 								// reads the package ... there the time comes from server
+			highWord = word(packetBuffer[40], packetBuffer[41]);					// get the high word from the package informations
+			lowWord = word(packetBuffer[42], packetBuffer[43]);						// get the low word from the package informations
+			secsSince1900 = highWord << 16 | lowWord;								// calculate the time since 1900 1st jan
+			Serial.println( "Seconds since Jan 1 1900 = " + (String)secsSince1900);	/* self explaining */
+			epoch = secsSince1900 - seventyYears;    								// subtract seventy years:
+			Serial.println( "Unix time = " + (String)epoch);						/* self explaining */
+			chHour    = (epoch % 86400L) / 3600;									// current hour
+			chMinute  = (epoch % 3600) / 60;										// current minute
+			sprintf(strTime,"%02i:%02i", chHour+2, chMinute) ;       	 			// print the hour, minute and second:
+			Serial.println("The UTC time is " + (String)strTime );       			// UTC is the time at Greenwich Meridian (GMT)
+			display.clearBuffer();													// clears the screen without removeing the pixels
+			display.drawStr(0, 8, "tesotec ATE solutions" ) ;						// emblem
+			display.drawStr(1, 63, "|" );											// begin line of the secounds bar
+			display.drawStr(122, 63, "|" );											// End linee of the secounds bar
+		}	
 	}
-      
-	chSeconds = epoch % 60 ;
-	display.setFont(u8g2_font_profont29_tf );
-	sprintf(strTime,"%02i:%02i:%02i", chHour+1, chMinute, chSeconds) ;    // print the hour, minute and second:
-	display.drawStr(0, 35, strTime );
-	display.setFont(u8g2_font_profont11_tr);
-	display.drawBox( (chSeconds*2) + 3, 58, 1, 5 );
-	display.drawBox( (chSeconds*2) + 4, 58, 1, 5 );
-    
-	display.sendBuffer();
+	chSeconds = epoch % 60 ;														// get the secounds of the current time
+	display.setFont(u8g2_font_profont29_tf );										// larger font
+	sprintf(strTime,"%02i:%02i:%02i", chHour+2 , chMinute, chSeconds) ;    			// print the hour, minute and second:
+	display.drawStr(0, 35, strTime );												// prints the time ( updated)
+	display.setFont(u8g2_font_profont11_tr);										// small font size
+	display.drawStr(0, 8, "tesotec ATE solutions" ) ;								// emblem
+	display.drawStr(1, 63, "|" );													// begin line of the secounds bar
+	display.drawStr(122, 63, "|" );													// End linee of the secounds bar
+	display.drawBox( (chSeconds*2) + 3, 58, 1, 5 );									// 1. bar Loading ... counting secounds and print 2 stripes to the bottom line of the screen
+	display.drawBox( (chSeconds*2) + 4, 58, 1, 5 );									// 2. bar
+	display.sendBuffer();															// sends to the screen whats written in the lines above
 }
-unsigned long sendNTPpacket(IPAddress& address)
-{
-	Serial.println("..sending NTP packet...");
-	memset(packetBuffer, 0, NTP_PACKET_SIZE);
-	packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-	packetBuffer[1] = 0;            // Stratum, or type of clock
-	packetBuffer[2] = 6;            // Polling Interval
-	packetBuffer[3] = 0xEC;         // Peer Clock Precision
+unsigned long sendNTPpacket(IPAddress& address){									// create the package function
+	Serial.println("..sending NTP packet...");										/* self explaining */
+	memset(packetBuffer, 0, NTP_PACKET_SIZE);										// sets a hash to send a requirement to the time server
+	packetBuffer[0] = 0b11100011;   												// LI, Version, Mode
+	packetBuffer[1] = 0;            												// Stratum, or type of clock
+	packetBuffer[2] = 6;            												// Polling Interval
+	packetBuffer[3] = 0xEC;         												// Peer Clock Precision
 	packetBuffer[12]  = 49;
 	packetBuffer[13]  = 0x4E;
 	packetBuffer[14]  = 49;
 	packetBuffer[15]  = 52;
-	udp.beginPacket(address, 123);  //NTP requests are to port 123
-	udp.write(packetBuffer, NTP_PACKET_SIZE);
-	udp.endPacket();
+	udp.beginPacket(address, 123); 													// NTP requests are to port 123
+	udp.write(packetBuffer, NTP_PACKET_SIZE);										// writes the max size to the package
+	udp.endPacket();																// end package protocol
 }
