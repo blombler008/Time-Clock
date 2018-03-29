@@ -1,0 +1,26 @@
+B11111111
+ |||||||^----- Pin0 LEDRotBig  
+ ||||||^------ Pin1 LEDRot1    
+ |||||^------- Pin2 LEDRot2    
+ ||||^-------- Pin3 LEDBlau    
+ |||^--------- Pin4 LEDGruenBig
+ ||^---------- Pin5 LEDGruen2  
+ |^----------- Pin6 LEDGruen1  
+ ^------------ Pin7 LEDOrange  
+#define PCF857X B00100000
+byte bLed = 0xFF; 																	// initialise all LEDs as off
+//LED ON
+void LedOn(int pos){																// pos stands for the LED posistion ... see bitcode / ledcode
+	bLed = bLed & ~(1 << pos);														// shifts the led pos into the right bit to controll it
+	Wire.beginTransmission(PCF857X); 												// begin talking to the PCF8574D
+	Wire.write(bLed); 																// write changes to PCF8574D
+	Wire.endTransmission();															// end talking to PCF8574D
+}
+//LED OFF
+
+void LedOff(int pos){																// pos stands for the LED posistion ... see bitcode / ledcode
+	bLed = bLed | ~(1 << pos);														// shifts the led pos into the right bit to controll it
+	Wire.beginTransmission(PCF857X); 												// begin talking to the PCF8574D
+	Wire.write(bLed); 																// write changes to PCF8574D
+	Wire.endTransmission();															// end talking to PCF8574D
+}
