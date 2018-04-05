@@ -9,6 +9,20 @@ extern "C" {
   #include "user_interface.h"
 }
 
+byte PCF8574D = 0x20;
+/* 
+	0x20 - 0x27 are the PCF8574D IDS remains
+	to the analog pins connectet to ground
+	in this case its 0x20 so all 3 analog pins to ground
+*/
+int LEDRotBig = 0;																	// -------0 -- Pin0
+int LEDRot1 = 1;																	// ------0- -- Pin1
+int LEDRot2 = 2;																	// -----0-- -- Pin2
+int LEDBlau = 3;																	// ----0--- -- Pin3
+int LEDGruenBig = 4;																// ---0---- -- Pin4
+int LEDGruen2 = 5;																	// --0----- -- Pin5
+int LEDGruen1 = 6;																	// -0------ -- Pin6
+int LEDOrange = 7;																	// 0------- -- Pin7
 
 unsigned long  epoch;																// initialise timer secounds
 byte timeServer[] = { 192, 43, 244, 18};    										// initialise local tiemr server ip
@@ -64,7 +78,7 @@ static const uint8_t tesotec [] PROGMEM = {											// logo in hex code
     0x00,0x10,0xf0,0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	0x00,0x00,0x00,0x00,0x00,0xc0,0xff,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,	0x00,0x00,0x00,0x00
-};																		
+};
 os_timer_t  TimerOneSecond ;														// initialise timer
 void timerCallback(void *pArg) {													// timer function to count the secounds time up
     epoch += 1;																		// counting secounds up
@@ -103,11 +117,11 @@ void setup() {
 int switchLight = 0;
 void loop() {
 	if (switchLight == 1){															/* self explaining */
-		Wire.beginTransmission(B00100000); 											// begin talking with PCF8574D
+		Wire.beginTransmission(PCF8574D); 											// begin talking with PCF8574D
 		Wire.write(B11110111); 														// LEDs ON
 		Wire.endTransmission();														// end talking with PCF8574D
 	} else {																		/* self explaining */
-		Wire.beginTransmission(B00100000); 											// begin talking with PCF8574D
+		Wire.beginTransmission(PCF8574D); 											// begin talking with PCF8574D
 		Wire.write(B11111111); 														// LEDs OFF
 		Wire.endTransmission();														// end talking with PCF8574D
 	}
@@ -142,7 +156,7 @@ void loop() {
 			display.drawStr(0, 8, "tesotec ATE solutions" ) ;						// emblem
 			display.drawStr(1, 63, "|" );											// begin line of the secounds bar
 			display.drawStr(122, 63, "|" );											// End linee of the secounds bar
-		}	
+		}
 	}
 	chSeconds = epoch % 60 ;														// get the secounds of the current time
 	display.setFont(u8g2_font_profont29_tf );										// larger font
