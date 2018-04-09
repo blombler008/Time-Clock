@@ -157,20 +157,20 @@ void loop() {
 			Serial.println("The UTC time is " + (String)strTime );       			// UTC is the time at Greenwich Meridian (GMT)
 			display.clearBuffer();													// clears the screen without removeing the pixels
 			display.drawStr(0, 8, "tesotec ATE solutions" ) ;						// emblem
-			display.drawStr(1, 63, "|" );											// begin line of the secounds bar
+			display.drawStr(0, 63, "|" );											// begin line of the secounds bar
 			display.drawStr(122, 63, "|" );											// End linee of the secounds bar
 		}
 	}
+	display.clearBuffer();															// clears the screen without removeing the pixels
 	chSeconds = epoch % 60 ;														// get the secounds of the current time
 	display.setFont(u8g2_font_profont29_tf );										// larger font
 	sprintf(strTime,"%02i:%02i:%02i", chHour+2 , chMinute, chSeconds) ;    			// print the hour, minute and second:
 	display.drawStr(0, 35, strTime );												// prints the time ( updated)
 	display.setFont(u8g2_font_profont11_tr);										// small font size
 	display.drawStr(0, 8, "tesotec ATE solutions" ) ;								// emblem
-	display.drawStr(1, 63, "|" );													// begin line of the secounds bar
+	display.drawStr(0, 63, "|" );													// begin line of the secounds bar
 	display.drawStr(122, 63, "|" );													// End linee of the secounds bar
-	display.drawBox( (chSeconds*2) + 3, 58, 1, 5 );									// 1. bar Loading ... counting secounds and print 2 stripes to the bottom line of the screen
-	display.drawBox( (chSeconds*2) + 4, 58, 1, 5 );									// 2. bar
+	display.drawBox( 4, 58, (chSeconds*2) + 1, 5 );									// bar Loading ... counting secounds and print 2 stripes to the bottom line of the screen
 	display.sendBuffer();															// sends to the screen whats written in the lines above
 }
 unsigned long sendNTPpacket(IPAddress& address){									// create the package function
