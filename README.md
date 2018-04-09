@@ -1,4 +1,4 @@
-# Timer Clock
+# Time Clock
 ## Instructions
 
 To Use you have to create a `Webkeys.h` file in the same directory as the `Time-Clock.ino` file is.  
