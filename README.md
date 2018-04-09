@@ -1,4 +1,14 @@
 # Timer Clock
+## Instructions
+
+To Use you have to create a `Webkeys.h` file in the same directory as the `Time-Clock.ino` file is.  
+In the `Webkeys.h` files you have to give the following to make it work...  
+```c++
+#define baudRate 9600
+#define webSSID "ExampleNetwork"
+#define webPawd "ExamplePassword"
+```
+
 ## CARE FULL
 
 WifiWebServer.ino is close to be broken  
