@@ -138,6 +138,10 @@ void loop() {
 		delay(700);																	// waiting 700 milisecounds
 		iReceiveCNT = udp.parsePacket();											// trying to get the server response
 		if (!iReceiveCNT) {															// waiting for the server to response success
+			display.setFont(u8g2_font_profont11_tr );								// small font size
+			display.clearBuffer();													// clears the screen without removeing the pixels
+			display.drawStr(0, 8, "Sending package to Server" );					// Display massage to see when the package wasn't send
+			display.sendBuffer();													// sends to the screen whats written in the lines above
 			switchLight = 0;														// turns the led off
 			Serial.print("A");														// Prints "A" as long as nothing was send yet
 		} else {																	/* self explaining */
@@ -156,7 +160,9 @@ void loop() {
 			sprintf(strTime,"%02i:%02i", chHour+2, chMinute) ;       	 			// print the hour, minute and second:
 			Serial.println("The UTC time is " + (String)strTime );       			// UTC is the time at Greenwich Meridian (GMT)
 			display.clearBuffer();													// clears the screen without removeing the pixels
-			display.drawStr(0, 8, "tesotec ATE solutions" ) ;						// emblem
+			display.setFont(u8g2_font_profont11_tr);								// small font size
+			//display.drawStr(0, 8, "tesotec ATE solutions" ) ;						// emblem
+			display.drawStr(0, 8, "Zeit Deutschland:" ) ;							// emblem
 			display.drawStr(0, 63, "|" );											// begin line of the secounds bar
 			display.drawStr(122, 63, "|" );											// End linee of the secounds bar
 		}
@@ -167,14 +173,15 @@ void loop() {
 	sprintf(strTime,"%02i:%02i:%02i", chHour+2 , chMinute, chSeconds) ;    			// print the hour, minute and second:
 	display.drawStr(0, 35, strTime );												// prints the time ( updated)
 	display.setFont(u8g2_font_profont11_tr);										// small font size
-	display.drawStr(0, 8, "tesotec ATE solutions" ) ;								// emblem
+	display.drawStr(0, 8, "Zeit Deutschland:" ) ;									// emblem
+	//display.drawStr(0, 8, "tesotec ATE solutions" ) ;								// emblem
 	display.drawStr(0, 63, "|" );													// begin line of the secounds bar
 	display.drawStr(122, 63, "|" );													// End linee of the secounds bar
 	display.drawBox( 4, 58, (chSeconds*2) + 1, 5 );									// bar Loading ... counting secounds and print 2 stripes to the bottom line of the screen
 	display.sendBuffer();															// sends to the screen whats written in the lines above
 }
 unsigned long sendNTPpacket(IPAddress& address){									// create the package function
-	Serial.println("..sending NTP packet...");										/* self explaining */
+	Serial.println("sending NTP packet");											/* self explaining */
 	memset(packetBuffer, 0, NTP_PACKET_SIZE);										// sets a hash to send a requirement to the time server
 	packetBuffer[0] = 0b11100011;   												// LI, Version, Mode
 	packetBuffer[1] = 0;            												// Stratum, or type of clock
